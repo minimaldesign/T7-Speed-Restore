@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		AA9DEFCC2FC2539700645E01 /* Samsunf T7 Shiled Fixer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Samsunf T7 Shiled Fixer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA9DEFCC2FC2539700645E01 /* Samsung T7 Shield Fixer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Samsung T7 Shield Fixer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AA9DEFCE2FC2539700645E01 /* Samsunf T7 Shiled Fixer */ = {
+		AA9DEFCE2FC2539700645E01 /* Samsung T7 Shield Fixer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Samsunf T7 Shiled Fixer";
+			path = "Samsung T7 Shield Fixer";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		AA9DEFC32FC2539700645E01 = {
 			isa = PBXGroup;
 			children = (
-				AA9DEFCE2FC2539700645E01 /* Samsunf T7 Shiled Fixer */,
+				AA9DEFCE2FC2539700645E01 /* Samsung T7 Shield Fixer */,
 				AA9DEFCD2FC2539700645E01 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		AA9DEFCD2FC2539700645E01 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AA9DEFCC2FC2539700645E01 /* Samsunf T7 Shiled Fixer.app */,
+				AA9DEFCC2FC2539700645E01 /* Samsung T7 Shield Fixer.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,26 +48,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AA9DEFCB2FC2539700645E01 /* Samsunf T7 Shiled Fixer */ = {
+		AA9DEFCB2FC2539700645E01 /* Samsung T7 Shield Fixer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AA9DEFD72FC2539800645E01 /* Build configuration list for PBXNativeTarget "Samsunf T7 Shiled Fixer" */;
+			buildConfigurationList = AA9DEFD72FC2539800645E01 /* Build configuration list for PBXNativeTarget "Samsung T7 Shield Fixer" */;
 			buildPhases = (
 				AA9DEFC82FC2539700645E01 /* Sources */,
 				AA9DEFC92FC2539700645E01 /* Frameworks */,
 				AA9DEFCA2FC2539700645E01 /* Resources */,
+				BB10000000000000000000A1 /* Build Privileged Helper */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				AA9DEFCE2FC2539700645E01 /* Samsunf T7 Shiled Fixer */,
+				AA9DEFCE2FC2539700645E01 /* Samsung T7 Shield Fixer */,
 			);
-			name = "Samsunf T7 Shiled Fixer";
+			name = "Samsung T7 Shield Fixer";
 			packageProductDependencies = (
 			);
-			productName = "Samsunf T7 Shiled Fixer";
-			productReference = AA9DEFCC2FC2539700645E01 /* Samsunf T7 Shiled Fixer.app */;
+			productName = "Samsung T7 Shield Fixer";
+			productReference = AA9DEFCC2FC2539700645E01 /* Samsung T7 Shield Fixer.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +86,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AA9DEFC72FC2539700645E01 /* Build configuration list for PBXProject "Samsunf T7 Shiled Fixer" */;
+			buildConfigurationList = AA9DEFC72FC2539700645E01 /* Build configuration list for PBXProject "Samsung T7 Shield Fixer" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +100,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AA9DEFCB2FC2539700645E01 /* Samsunf T7 Shiled Fixer */,
+				AA9DEFCB2FC2539700645E01 /* Samsung T7 Shield Fixer */,
 			);
 		};
 /* End PBXProject section */
@@ -113,6 +114,39 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BB10000000000000000000A1 /* Build Privileged Helper */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/T7FixerHelper/build_helper.sh",
+				"$(SRCROOT)/T7FixerHelper/main.swift",
+				"$(SRCROOT)/T7FixerHelper/T7HelperService.swift",
+				"$(SRCROOT)/T7FixerHelper/T7HelperProtocol.swift",
+				"$(SRCROOT)/T7FixerHelper/DiskUtilRunner.swift",
+				"$(SRCROOT)/T7FixerHelper/FstabManager.swift",
+				"$(SRCROOT)/T7FixerHelper/Info.plist",
+				"$(SRCROOT)/T7FixerHelper/Helper.entitlements",
+				"$(SRCROOT)/T7FixerHelper/net.mnmldsgn.t7fixer.helper.plist",
+			);
+			name = "Build Privileged Helper";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Contents/MacOS/net.mnmldsgn.t7fixer.helper",
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Contents/Library/LaunchDaemons/net.mnmldsgn.t7fixer.helper.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"${SRCROOT}/T7FixerHelper/build_helper.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AA9DEFC82FC2539700645E01 /* Sources */ = {
@@ -248,12 +282,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Samsung T7 Shield Fixer/Samsung_T7_Shield_Fixer.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -261,7 +297,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "mnmldsgn.Samsunf-T7-Shiled-Fixer";
+				PRODUCT_BUNDLE_IDENTIFIER = net.mnmldsgn.t7fixer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -278,12 +314,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Samsung T7 Shield Fixer/Samsung_T7_Shield_Fixer.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -291,7 +329,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "mnmldsgn.Samsunf-T7-Shiled-Fixer";
+				PRODUCT_BUNDLE_IDENTIFIER = net.mnmldsgn.t7fixer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -306,7 +344,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AA9DEFC72FC2539700645E01 /* Build configuration list for PBXProject "Samsunf T7 Shiled Fixer" */ = {
+		AA9DEFC72FC2539700645E01 /* Build configuration list for PBXProject "Samsung T7 Shield Fixer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA9DEFD52FC2539800645E01 /* Debug */,
@@ -315,7 +353,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AA9DEFD72FC2539800645E01 /* Build configuration list for PBXNativeTarget "Samsunf T7 Shiled Fixer" */ = {
+		AA9DEFD72FC2539800645E01 /* Build configuration list for PBXNativeTarget "Samsung T7 Shield Fixer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA9DEFD82FC2539800645E01 /* Debug */,
