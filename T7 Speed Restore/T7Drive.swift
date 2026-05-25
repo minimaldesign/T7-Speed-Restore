@@ -16,6 +16,10 @@ struct T7Drive: Equatable, Sendable {
         return formatter.string(fromByteCount: sizeBytes)
     }
 
+    var volumeName: String {
+        URL(fileURLWithPath: mountPath).lastPathComponent
+    }
+
     var displaySummary: String {
         "\(model), \(sizeDescription), /dev/\(wholeDisk)"
     }
@@ -55,7 +59,7 @@ enum T7DetectionError: LocalizedError {
             let joined = names.map { "\"\($0)\"" }.joined(separator: ", ")
             return "This drive has an extra partition (\(joined)) sitting after the main APFS partition, which prevents the fix from being applied. Back up that partition's data, delete it in Disk Utility, then try again."
         case .diskutilFailure:
-            return "Couldn't read the drive's layout. Try unplugging and replugging the drive."
+            return "Couldn't read the drive's info. Try unplugging and replugging the drive."
         }
     }
 }

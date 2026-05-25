@@ -39,8 +39,8 @@ enum Benchmark {
         }.value
     }
 
-    private nonisolated static func runWriteSync(on volumePath: String,
-                                                  durationSeconds: Double) throws -> BenchmarkResult {
+    nonisolated static func runWriteSync(on volumePath: String,
+                                          durationSeconds: Double) throws -> BenchmarkResult {
         let tmpName = ".t7fixer-bench-\(UUID().uuidString).tmp"
         let path = (volumePath as NSString).appendingPathComponent(tmpName)
 
@@ -63,6 +63,7 @@ enum Benchmark {
         let start = Date()
         var totalWritten: Int = 0
         while Date().timeIntervalSince(start) < durationSeconds {
+            if Task.isCancelled { throw CancellationError() }
             let n = buf.withUnsafeBytes { ptr -> Int in
                 write(fd, ptr.baseAddress, ptr.count)
             }

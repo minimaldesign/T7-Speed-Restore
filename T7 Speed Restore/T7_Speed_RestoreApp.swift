@@ -13,5 +13,6 @@ struct T7_Speed_RestoreApp: App {
         WindowGroup {
             ContentView()
         }
+        .windowResizability(.contentSize)
     }
 }
