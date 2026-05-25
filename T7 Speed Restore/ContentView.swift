@@ -1,10 +1,12 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @State private var drive: T7Drive?
     @State private var detectionError: String?
     @State private var isDetecting = false
     @State private var dropTargeted = false
+    @State private var summaryDropTargeted = false
 
     @State private var fixCoordinator = FixCoordinator()
     @State private var benchmarkCoordinator = BenchmarkCoordinator()
@@ -14,7 +16,10 @@ struct ContentView: View {
             header
 
             if let drive {
-                driveSummary(drive)
+                driveSummary(drive, isDropTargeted: summaryDropTargeted)
+                    .onDrop(of: [.fileURL], isTargeted: $summaryDropTargeted) { providers in
+                        handleDropProviders(providers)
+                    }
                 feedbackStrip
                 HStack(alignment: .top, spacing: 16) {
                     benchmarkCard(drive: drive)
@@ -53,7 +58,7 @@ struct ContentView: View {
         }
     }
 
-    private func driveSummary(_ drive: T7Drive) -> some View {
+    private func driveSummary(_ drive: T7Drive, isDropTargeted: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 Image(systemName: "externaldrive.fill")
@@ -84,13 +89,32 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white.opacity(0.10))
+                .fill(isDropTargeted ? Color.accentColor.opacity(0.10) : Color.white.opacity(0.10))
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.accentColor.opacity(isDropTargeted ? 0.65 : 0), lineWidth: 1.5)
+        )
+        .animation(.easeInOut(duration: 0.12), value: isDropTargeted)
     }
 
     private var feedbackStrip: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
+                if isDetecting {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small)
+                        Text("Inspecting drive...")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                } else if let detectionError {
+                    Text(detectionError)
+                        .font(.callout)
+                        .foregroundStyle(errorColor)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
                 switch fixCoordinator.state {
                 case .idle:
                     EmptyView()
@@ -160,6 +184,8 @@ struct ContentView: View {
     }
 
     private var hasAnyFeedback: Bool {
+        isDetecting ||
+        detectionError != nil ||
         fixCoordinator.state != .idle ||
         benchmarkCoordinator.state != .idle ||
         benchmarkCoordinator.latest != nil
@@ -219,6 +245,15 @@ struct ContentView: View {
         benchmarkCoordinator.clearHistory()
     }
 
+    private func handleDropProviders(_ providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+        _ = provider.loadObject(ofClass: URL.self) { url, _ in
+            guard let url else { return }
+            Task { @MainActor in handleDrop(url: url) }
+        }
+        return true
+    }
+
     private func handleDrop(url: URL) {
         guard !isDetecting else { return }
         isDetecting = true
@@ -226,6 +261,10 @@ struct ContentView: View {
         Task {
             do {
                 let detected = try await T7Detector.detect(at: url)
+                if detected.wholeDisk != drive?.wholeDisk {
+                    fixCoordinator.reset()
+                    benchmarkCoordinator.clearHistory()
+                }
                 drive = detected
                 isDetecting = false
             } catch {
