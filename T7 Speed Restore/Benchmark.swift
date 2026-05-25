@@ -32,8 +32,10 @@ enum BenchmarkError: LocalizedError {
 
 enum Benchmark {
 
+    static let defaultDurationSeconds: Double = 6
+
     nonisolated static func runWrite(on volumePath: String,
-                                      durationSeconds: Double = 10) async throws -> BenchmarkResult {
+                                      durationSeconds: Double = defaultDurationSeconds) async throws -> BenchmarkResult {
         try await Task.detached(priority: .userInitiated) {
             try runWriteSync(on: volumePath, durationSeconds: durationSeconds)
         }.value

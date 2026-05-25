@@ -26,7 +26,7 @@ The fix is not permanent. If the slowdown comes back, just run the app again.
 1. Open the app
 2. Drag your T7's volume from Finder into the drop zone
 3. Click **Run Benchmark** to confirm the slowdown
-4. Click **Fix Write Speed** and enter your Mac password when prompted
+4. Click **Restore Speed** and enter your Mac password when prompted
 5. Click **Run Benchmark** again to verify it worked
 
 ---

@@ -144,7 +144,7 @@ struct ContentView: View {
                         Text("Running benchmark...")
                             .font(.callout)
                             .foregroundStyle(.secondary)
-                        ProgressView(value: min(elapsed / 10.0, 1.0))
+                        ProgressView(value: min(elapsed / Benchmark.defaultDurationSeconds, 1.0))
                             .progressViewStyle(.linear)
                     }
                 case .failed(let msg):
@@ -193,11 +193,11 @@ struct ContentView: View {
 
     private func fixCard(drive: T7Drive) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Fix Write Speed").font(.headline)
+            Text("Restore Write Speed").font(.headline)
             Button {
                 Task { await fixCoordinator.runFix(on: drive) }
             } label: {
-                Text("Fix Write Speed").frame(maxWidth: .infinity)
+                Text("Restore Speed").frame(maxWidth: .infinity)
             }
             .buttonStyle(FlatProminentButtonStyle())
             .disabled(fixCoordinator.isBusy || benchmarkCoordinator.isRunning)

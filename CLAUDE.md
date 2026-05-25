@@ -14,7 +14,7 @@ expected to re-run T7Fixer periodically.
 2. App validates the drop: external/removable drive, Samsung T7 family,
    APFS- or HFS+-formatted, has ≥6 GB free, has no extra GPT partitions
    sitting after the APFS container.
-3. User clicks **Fix Write Speed**.
+3. User clicks **Restore Speed**.
 4. App runs (as root, via an admin-authentication prompt) a bash script that:
    - removes any pre-existing `T7FIXER` GPT partition and grows APFS back,
    - shrinks the APFS container by 5 GiB,
@@ -28,7 +28,7 @@ expected to re-run T7Fixer periodically.
    is the actual mechanism that keeps `T7FIXER` invisible to the user, since
    `/etc/fstab` is not writable via osascript-elevated bash on
    Sequoia+ (see "Gotchas" below).
-6. Separate **Benchmark** card lets the user run a 10-second F_NOCACHE
+6. Separate **Benchmark** card lets the user run a 6-second F_NOCACHE
    write test on the T7's main volume to verify the fix worked.
 
 ## Distribution
@@ -135,8 +135,8 @@ runtime). Keep it intact.
   Fix button.
 - `BenchmarkCoordinator.swift` — same shape, for the Benchmark button.
 - `Benchmark.swift` — POSIX `open` + `fcntl F_NOCACHE` + `write` loop,
-  time-boxed at 10s. Uses 1 MB chunks so the time-box overshoots by at most
-  ~350 ms even at the bug's ~2 MB/s.
+  time-boxed at 6s. Uses 1 MB chunks so the time-box overshoots by at most
+  ~500 ms even at the bug's ~2 MB/s.
 - `PrivilegeRouter.swift` — see "Two privilege paths" above.
 - `OsascriptBridge.swift` — the current Fix runner. The bash script lives
   here as a Swift triple-quoted string (with caveats about escaping — see
@@ -342,7 +342,7 @@ Built `.app` lives in
 1. Cmd+R in Xcode.
 2. Drop the T7 onto the drop zone.
 3. Click "Run Benchmark" — note the speed (probably slow if the bug is active).
-4. Click "Fix Write Speed" — enter your admin password.
+4. Click "Restore Speed" — enter your admin password.
 5. Click "Run Benchmark" again — speed should be ~500 MB/s.
 6. Verify the partition state:
 

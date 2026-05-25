@@ -43,7 +43,7 @@ final class BenchmarkCoordinator {
         }
 
         let wt = Task.detached(priority: .userInitiated) {
-            try Benchmark.runWriteSync(on: drive.mountPath, durationSeconds: 10)
+            try Benchmark.runWriteSync(on: drive.mountPath, durationSeconds: Benchmark.defaultDurationSeconds)
         }
         writeTask = wt
 
