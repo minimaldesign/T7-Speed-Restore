@@ -122,9 +122,9 @@ runtime). Keep it intact.
 
 ## File map
 
-### Main app (`Samsung T7 Shield Fixer/Samsung T7 Shield Fixer/`)
+### Main app (`T7 Speed Restore/T7 Speed Restore/`)
 
-- `Samsung_T7_Shield_FixerApp.swift` — `@main` entry point (default Xcode-generated).
+- `T7_Speed_RestoreApp.swift` — `@main` entry point (default Xcode-generated).
 - `ContentView.swift` — top-level SwiftUI view.
 - `DropZoneView.swift` — the drag-and-drop target view.
 - `T7Drive.swift` — value type holding the validated drive info plus the
@@ -147,7 +147,7 @@ runtime). Keep it intact.
 - `T7HelperProtocol.swift` — `@objc` XPC protocol + shared constants
   (`T7HelperConstants.machServiceName`, `partitionLabel`, `partitionSizeGB`,
   `fstabMarker`). Shared between main app and helper target.
-- `Samsung_T7_Shield_Fixer.entitlements` — `com.apple.security.app-sandbox = false`.
+- `T7_Speed_Restore.entitlements` — `com.apple.security.app-sandbox = false`.
 
 ### Helper target (`T7FixerHelper/`)
 
@@ -175,7 +175,7 @@ runtime). Keep it intact.
   copies the launchd plist, signs (if signing identity is set, which on
   ad-hoc builds it isn't).
 
-### Project (`Samsung T7 Shield Fixer.xcodeproj/`)
+### Project (`T7 Speed Restore.xcodeproj/`)
 
 Modern Xcode 26+ project with `PBXFileSystemSynchronizedRootGroup` —
 sources are auto-discovered from disk, not enumerated in the pbxproj.
@@ -190,7 +190,7 @@ Key build settings (target-level):
 - `MACOSX_DEPLOYMENT_TARGET = 15.7`
 - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` (Swift 6 default; non-main
   work must be `nonisolated`)
-- `CODE_SIGN_ENTITLEMENTS = "Samsung T7 Shield Fixer/Samsung_T7_Shield_Fixer.entitlements"`
+- `CODE_SIGN_ENTITLEMENTS = "T7 Speed Restore/T7_Speed_Restore.entitlements"`
 - `PRODUCT_BUNDLE_IDENTIFIER = "net.mnmldsgn.t7fixer"`
 
 ## Gotchas (the hard-won knowledge)
@@ -327,15 +327,15 @@ in user-facing error messages anymore — it's a developer tool.
 
 ```bash
 # From the project directory:
-xcodebuild -project "Samsung T7 Shield Fixer.xcodeproj" \
-    -scheme "Samsung T7 Shield Fixer" \
+xcodebuild -project "T7 Speed Restore.xcodeproj" \
+    -scheme "T7 Speed Restore" \
     -configuration Debug \
     CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
     build
 ```
 
 Built `.app` lives in
-`~/Library/Developer/Xcode/DerivedData/Samsung_T7_Shield_Fixer-*/Build/Products/Debug/Samsung T7 Shield Fixer.app`.
+`~/Library/Developer/Xcode/DerivedData/T7_Speed_Restore-*/Build/Products/Debug/T7 Speed Restore.app`.
 
 ### Manual end-to-end test (requires a real Samsung T7)
 

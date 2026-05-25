@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		AA9DEFCC2FC2539700645E01 /* Samsung T7 Shield Fixer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Samsung T7 Shield Fixer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA9DEFCC2FC2539700645E01 /* T7 Speed Restore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "T7 Speed Restore.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AA9DEFCE2FC2539700645E01 /* Samsung T7 Shield Fixer */ = {
+		AA9DEFCE2FC2539700645E01 /* T7 Speed Restore */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Samsung T7 Shield Fixer";
+			path = "T7 Speed Restore";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		AA9DEFC32FC2539700645E01 = {
 			isa = PBXGroup;
 			children = (
-				AA9DEFCE2FC2539700645E01 /* Samsung T7 Shield Fixer */,
+				AA9DEFCE2FC2539700645E01 /* T7 Speed Restore */,
 				AA9DEFCD2FC2539700645E01 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		AA9DEFCD2FC2539700645E01 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AA9DEFCC2FC2539700645E01 /* Samsung T7 Shield Fixer.app */,
+				AA9DEFCC2FC2539700645E01 /* T7 Speed Restore.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AA9DEFCB2FC2539700645E01 /* Samsung T7 Shield Fixer */ = {
+		AA9DEFCB2FC2539700645E01 /* T7 Speed Restore */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AA9DEFD72FC2539800645E01 /* Build configuration list for PBXNativeTarget "Samsung T7 Shield Fixer" */;
+			buildConfigurationList = AA9DEFD72FC2539800645E01 /* Build configuration list for PBXNativeTarget "T7 Speed Restore" */;
 			buildPhases = (
 				AA9DEFC82FC2539700645E01 /* Sources */,
 				AA9DEFC92FC2539700645E01 /* Frameworks */,
@@ -62,13 +62,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				AA9DEFCE2FC2539700645E01 /* Samsung T7 Shield Fixer */,
+				AA9DEFCE2FC2539700645E01 /* T7 Speed Restore */,
 			);
-			name = "Samsung T7 Shield Fixer";
+			name = "T7 Speed Restore";
 			packageProductDependencies = (
 			);
-			productName = "Samsung T7 Shield Fixer";
-			productReference = AA9DEFCC2FC2539700645E01 /* Samsung T7 Shield Fixer.app */;
+			productName = "T7 Speed Restore";
+			productReference = AA9DEFCC2FC2539700645E01 /* T7 Speed Restore.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -86,7 +86,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AA9DEFC72FC2539700645E01 /* Build configuration list for PBXProject "Samsung T7 Shield Fixer" */;
+			buildConfigurationList = AA9DEFC72FC2539700645E01 /* Build configuration list for PBXProject "T7 Speed Restore" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -100,7 +100,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AA9DEFCB2FC2539700645E01 /* Samsung T7 Shield Fixer */,
+				AA9DEFCB2FC2539700645E01 /* T7 Speed Restore */,
 			);
 		};
 /* End PBXProject section */
@@ -282,7 +282,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "Samsung T7 Shield Fixer/Samsung_T7_Shield_Fixer.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "T7 Speed Restore/T7_Speed_Restore.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -314,7 +314,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "Samsung T7 Shield Fixer/Samsung_T7_Shield_Fixer.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "T7 Speed Restore/T7_Speed_Restore.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -344,7 +344,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AA9DEFC72FC2539700645E01 /* Build configuration list for PBXProject "Samsung T7 Shield Fixer" */ = {
+		AA9DEFC72FC2539700645E01 /* Build configuration list for PBXProject "T7 Speed Restore" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA9DEFD52FC2539800645E01 /* Debug */,
@@ -353,7 +353,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AA9DEFD72FC2539800645E01 /* Build configuration list for PBXNativeTarget "Samsung T7 Shield Fixer" */ = {
+		AA9DEFD72FC2539800645E01 /* Build configuration list for PBXNativeTarget "T7 Speed Restore" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA9DEFD82FC2539800645E01 /* Debug */,
