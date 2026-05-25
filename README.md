@@ -1,4 +1,4 @@
-# Samsung T7 Shield Fixer
+# Samsung T7 Speed Restore
 
 Fixes the well-known write speed bug on Samsung T7, T7 Shield, and T7 Touch SSDs where the drive slows down to ~2 MB/s after a while. One click brings it back to 500+ MB/s.
 
