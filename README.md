@@ -67,4 +67,4 @@ Apple requires a paid Developer Program membership ($99/year) to distribute apps
 
 ## License
 
-MIT
+GPL-3.0
