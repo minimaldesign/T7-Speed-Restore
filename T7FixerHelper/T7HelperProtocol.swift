@@ -16,5 +16,5 @@ nonisolated public enum T7HelperConstants {
     public static let machServiceName = "net.mnmldsgn.t7fixer.helper"
     public static let fstabMarker = "# T7FIXER managed by Samsung T7 Fixer"
     public static let partitionLabel = "T7FIXER"
-    public static let partitionSizeGB = 5
+    public static let partitionSizeGB = 25
 }

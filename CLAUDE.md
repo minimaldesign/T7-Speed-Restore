@@ -12,13 +12,13 @@ expected to re-run T7Fixer periodically.
 1. User drags their T7's mounted volume (e.g. `/Volumes/MyT7Data`) onto the
    drop zone in the app window.
 2. App validates the drop: external/removable drive, Samsung T7 family,
-   APFS- or HFS+-formatted, has ≥6 GB free, has no extra GPT partitions
+   APFS- or HFS+-formatted, has ≥26 GB free, has no extra GPT partitions
    sitting after the APFS container.
 3. User clicks **Restore Speed**.
 4. App runs (as root, via an admin-authentication prompt) a bash script that:
    - removes any pre-existing `T7FIXER` GPT partition and grows APFS back,
-   - shrinks the APFS container by 5 GiB,
-   - creates a fresh 5 GB exFAT partition named `T7FIXER` in the freed space,
+   - shrinks the APFS container by 25 GiB,
+   - creates a fresh 25 GB exFAT partition named `T7FIXER` in the freed space,
    - tries (best-effort) to write a `noauto,ro` entry to `/etc/fstab`,
    - unmounts the new partition.
 5. App installs a per-user **LaunchAgent** at
@@ -311,7 +311,7 @@ non-obvious ones:
   `apfsPartition == wholeDisk`. Refuse with "reformat to APFS with GPT
   scheme".
 
-- **Less than ~6 GB free space.** We need 5 GB for the partition plus a
+- **Less than ~26 GB free space.** We need 25 GB for the partition plus a
   small buffer. Read from the APFS container's `FreeSpace`. Below this
   threshold the shrink would fail.
 
