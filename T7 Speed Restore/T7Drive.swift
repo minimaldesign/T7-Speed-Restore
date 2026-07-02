@@ -44,9 +44,9 @@ enum T7DetectionError: LocalizedError {
             return "This is an internal disk. Only external Samsung T7 drives are supported."
         case .notSamsungT7(let model):
             if model.isEmpty || model == "Unknown" {
-                return "This doesn't look like a Samsung T7. Only the T7, T7 Shield, and T7 Touch are supported."
+                return "This drive doesn't report a recognized Samsung T7 model name. If you are sure it is a T7, T7 Shield, or T7 Touch, you can continue anyway."
             }
-            return "This is a \(model). Only the Samsung T7, T7 Shield, and T7 Touch are supported."
+            return "This drive reports itself as \"\(model)\", which is not a recognized Samsung T7 model name. If you are sure it is a T7, T7 Shield, or T7 Touch, you can continue anyway."
         case .unsupportedFilesystem(let name):
             return "This drive is formatted as \(name). Back up its data and reformat to APFS in Disk Utility, then try again."
         case .wholeDiskAPFS:

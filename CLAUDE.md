@@ -294,6 +294,18 @@ Every entry here cost a debugging cycle to discover.
   which broke the XPC interface — `T7HelperProtocol` is marked
   `@objc nonisolated public protocol T7HelperProtocol`.
 
+### Model-string variance
+
+- **Newer T7 units / firmware report "PSSD T7", not "Samsung Portable SSD
+  T7".** A real user's plain T7s were rejected because the matcher only knew
+  the older strings. `T7Detector.isSamsungT7` must accept both naming
+  families ("Portable SSD T7...", "PSSD T7...", "Samsung T7", plus the
+  Shield/Touch variants), and the model check consults all three identity
+  keys (`MediaName`, `IORegistryEntryName`, `DeviceModel`), not just the
+  first non-empty one. For strings we still don't anticipate, the UI offers
+  a "Use This Drive Anyway" override that re-runs detection with
+  `allowUnrecognizedModel: true` (all other safety checks still apply).
+
 ### Detection refusal modes
 
 The detector refuses with a clean error message in several cases. The

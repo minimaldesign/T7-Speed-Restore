@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @State private var drive: T7Drive?
     @State private var detectionError: String?
+    @State private var overridableURL: URL?
     @State private var isDetecting = false
     @State private var dropTargeted = false
     @State private var summaryDropTargeted = false
@@ -26,7 +27,7 @@ struct ContentView: View {
                     fixCard(drive: drive)
                 }
             } else {
-                DropZoneView(isTargeted: $dropTargeted, onDrop: handleDrop)
+                DropZoneView(isTargeted: $dropTargeted, onDrop: { handleDrop(url: $0) })
                 if isDetecting {
                     HStack(spacing: 8) {
                         ProgressView().controlSize(.small)
@@ -36,9 +37,7 @@ struct ContentView: View {
                     }
                 }
                 if let detectionError {
-                    Text(detectionError)
-                        .font(.callout)
-                        .foregroundStyle(errorColor)
+                    detectionErrorView(detectionError)
                         .padding(.top, 4)
                 }
             }
@@ -109,10 +108,7 @@ struct ContentView: View {
                             .foregroundStyle(.secondary)
                     }
                 } else if let detectionError {
-                    Text(detectionError)
-                        .font(.callout)
-                        .foregroundStyle(errorColor)
-                        .fixedSize(horizontal: false, vertical: true)
+                    detectionErrorView(detectionError)
                 }
 
                 switch fixCoordinator.state {
@@ -183,6 +179,23 @@ struct ContentView: View {
         )
     }
 
+    private func detectionErrorView(_ message: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(message)
+                .font(.callout)
+                .foregroundStyle(errorColor)
+                .fixedSize(horizontal: false, vertical: true)
+            if overridableURL != nil {
+                Button("Use This Drive Anyway") {
+                    if let url = overridableURL {
+                        handleDrop(url: url, allowUnrecognizedModel: true)
+                    }
+                }
+                .buttonStyle(FlatSecondaryButtonStyle(compact: true))
+            }
+        }
+    }
+
     private var hasAnyFeedback: Bool {
         isDetecting ||
         detectionError != nil ||
@@ -241,6 +254,7 @@ struct ContentView: View {
     private func resetDrive() {
         drive = nil
         detectionError = nil
+        overridableURL = nil
         fixCoordinator.reset()
         benchmarkCoordinator.clearHistory()
     }
@@ -254,13 +268,15 @@ struct ContentView: View {
         return true
     }
 
-    private func handleDrop(url: URL) {
+    private func handleDrop(url: URL, allowUnrecognizedModel: Bool = false) {
         guard !isDetecting else { return }
         isDetecting = true
         detectionError = nil
+        overridableURL = nil
         Task {
             do {
-                let detected = try await T7Detector.detect(at: url)
+                let detected = try await T7Detector.detect(
+                    at: url, allowUnrecognizedModel: allowUnrecognizedModel)
                 if detected.wholeDisk != drive?.wholeDisk {
                     fixCoordinator.reset()
                     benchmarkCoordinator.clearHistory()
@@ -268,6 +284,9 @@ struct ContentView: View {
                 drive = detected
                 isDetecting = false
             } catch {
+                if case T7DetectionError.notSamsungT7 = error {
+                    overridableURL = url
+                }
                 detectionError = (error as? LocalizedError)?.errorDescription ?? "\(error)"
                 isDetecting = false
             }

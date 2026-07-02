@@ -2,7 +2,8 @@ import Foundation
 
 enum T7Detector {
 
-    nonisolated static func detect(at url: URL) async throws -> T7Drive {
+    nonisolated static func detect(at url: URL,
+                                   allowUnrecognizedModel: Bool = false) async throws -> T7Drive {
         guard url.isFileURL else { throw T7DetectionError.notAVolume }
         let path = url.path
 
@@ -79,11 +80,15 @@ enum T7Detector {
             || (wholeInfo["Ejectable"] as? Bool ?? false)
         if !removable { throw T7DetectionError.internalDisk }
 
-        let model = nonEmpty(wholeInfo["MediaName"] as? String)
-            ?? nonEmpty(wholeInfo["IORegistryEntryName"] as? String)
-            ?? nonEmpty(wholeInfo["DeviceModel"] as? String)
-            ?? "Unknown"
-        if !isSamsungT7(model: model) {
+        // A T7 can surface its product string in any of these keys depending
+        // on firmware; accept if any of them matches.
+        let modelCandidates = [
+            wholeInfo["MediaName"] as? String,
+            wholeInfo["IORegistryEntryName"] as? String,
+            wholeInfo["DeviceModel"] as? String,
+        ].compactMap(nonEmpty)
+        let model = modelCandidates.first ?? "Unknown"
+        if !modelCandidates.contains(where: isSamsungT7(model:)) && !allowUnrecognizedModel {
             throw T7DetectionError.notSamsungT7(model: model)
         }
 
@@ -132,13 +137,16 @@ enum T7Detector {
         return 0
     }
 
+    // Known product strings: "Samsung Portable SSD T7", "Portable SSD T7 Touch",
+    // "Samsung T7", and on newer units/firmware "PSSD T7" / "PSSD T7 Shield"
+    // (Samsung's newer naming, matching the T9's "PSSD T9").
     private nonisolated static func isSamsungT7(model: String) -> Bool {
         let lowered = model.lowercased()
-        if lowered.contains("portable ssd t7") { return true }
         if lowered.contains("t7 shield") { return true }
         if lowered.contains("t7 touch") { return true }
-        if lowered.contains("samsung") && lowered.contains("t7") { return true }
-        return false
+        let hasT7Word = lowered.range(of: "\\bt7\\b", options: .regularExpression) != nil
+        let vendorHints = ["samsung", "pssd", "portable ssd"]
+        return hasT7Word && vendorHints.contains(where: lowered.contains)
     }
 
     private nonisolated static func extraGPTPartitions(onWholeDisk wholeDisk: String,
