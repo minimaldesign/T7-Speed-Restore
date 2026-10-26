@@ -271,11 +271,15 @@ Every entry here cost a debugging cycle to discover.
   script's whole-disk regex accepts any disk number; the `Internal` and
   `Removable` plist checks are what protect the boot disk.
 
-- **Windows leftovers block the fix.** A nameless partition Disk Utility
-  won't delete (typically a 16 MB "Microsoft Reserved" partition from
-  initializing the drive on a PC) trips the extra-partition refusal. The
-  error now includes the partition's `Content` type so support can tell.
-  `sudo diskutil eraseVolume free Empty diskNsM` removes it.
+- **Only partitions physically AFTER the APFS container block the fix.**
+  A drive initialized on Windows carries a nameless 16 MB "Microsoft
+  Reserved" partition at the START of the disk (slot 1, APFS in slot 2),
+  and Disk Utility won't delete it. It is harmless: addPartition puts
+  T7FIXER in the gap behind the container. `T7Detector` compares
+  `PartitionMapPartitionOffset` values and ignores anything in front of
+  the container; a partition whose offset can't be read is treated as
+  trailing. The refusal message names the partition's `Content` type.
+  Slot numbers are not physical order, so don't go back to comparing them.
 
 ### macOS file permissions
 

@@ -180,6 +180,17 @@ enum T7Detector {
             return []
         }
 
+        // Only a partition that sits physically AFTER the APFS container is a
+        // problem: addPartition places T7FIXER in the gap right behind the
+        // container, and nothing can be inserted in front of a partition that
+        // is already there. Anything before the container (an EFI partition,
+        // or the 16 MB "Microsoft Reserved" partition Windows writes at the
+        // start of a drive it initialized) is irrelevant and must not block
+        // the fix. Slot numbers don't say where a partition lives, so compare
+        // byte offsets; a partition whose offset can't be read is treated as
+        // trailing, the conservative choice.
+        let apfsOffset = partitionOffset(apfsBackingPartition)
+
         var extras: [String] = []
         for part in partitions {
             let bsdName = part["DeviceIdentifier"] as? String ?? ""
@@ -189,6 +200,7 @@ enum T7Detector {
             if content == "EFI" { continue }
             if bsdName == apfsBackingPartition { continue }
             if volName == T7HelperConstants.partitionLabel { continue }
+            if let apfsOffset, let offset = partitionOffset(bsdName), offset < apfsOffset { continue }
 
             // Name the partition type too: an unnamed "Microsoft Reserved"
             // leftover from Windows is the usual culprit, and Disk Utility
@@ -198,6 +210,14 @@ enum T7Detector {
             extras.append(label)
         }
         return extras
+    }
+
+    /// Byte offset of a partition on its physical disk, from
+    /// `PartitionMapPartitionOffset` in `diskutil info -plist`.
+    private nonisolated static func partitionOffset(_ partition: String) -> Int64? {
+        guard let info = try? runDiskutilPlist(["info", "-plist", partition]) else { return nil }
+        let offset = readInt64(info["PartitionMapPartitionOffset"])
+        return offset > 0 ? offset : nil
     }
 
     private nonisolated static func findExistingT7Fixer(onWholeDisk wholeDisk: String) throws -> String? {
