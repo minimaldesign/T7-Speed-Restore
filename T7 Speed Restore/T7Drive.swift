@@ -34,6 +34,7 @@ enum T7DetectionError: LocalizedError {
     case noParentDisk
     case notEnoughFreeSpace(neededGB: Int, freeGB: Double)
     case extraGPTPartitions(names: [String])
+    case bootVolume
     case diskutilFailure(String)
 
     var errorDescription: String? {
@@ -57,7 +58,9 @@ enum T7DetectionError: LocalizedError {
             return String(format: "The drive needs about %d GB of free space, but only %.1f GB is free. Delete some files and try again.", needed, free)
         case .extraGPTPartitions(let names):
             let joined = names.map { "\"\($0)\"" }.joined(separator: ", ")
-            return "This drive has an extra partition (\(joined)) sitting after the main APFS partition, which prevents the fix from being applied. Back up that partition's data, delete it in Disk Utility, then try again."
+            return "This drive has an extra partition (\(joined)) next to the main APFS partition, which prevents the fix from being applied. Back up that partition’s data, delete it in Disk Utility, then try again. If Disk Utility won’t delete it, click Copy Diagnostics and send the result with your bug report."
+        case .bootVolume:
+            return "This drive is the disk your Mac is running from. The fix can’t resize a startup disk. Start up from another disk, plug the T7 in as an external drive, then try again."
         case .diskutilFailure:
             return "Couldn't read the drive's info. Try unplugging and replugging the drive."
         }

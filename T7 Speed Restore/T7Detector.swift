@@ -14,6 +14,22 @@ enum T7Detector {
             throw T7DetectionError.diskutilFailure(String(describing: error))
         }
 
+        // Refuse the startup disk. A T7 can be booted from, and fsck_apfs on a
+        // live system container reports spurious problems, so resizeContainer
+        // fails with -69716. Compare containers rather than mount points so
+        // that dropping the Data volume of a booted T7 is caught too.
+        if let bootInfo = try? runDiskutilPlist(["info", "-plist", "/"]) {
+            let bootContainer = nonEmpty(bootInfo["APFSContainerReference"] as? String)
+            let bootDisk = nonEmpty(bootInfo["ParentWholeDisk"] as? String)
+            let volContainer = nonEmpty(volInfo["APFSContainerReference"] as? String)
+            let volDisk = nonEmpty(volInfo["ParentWholeDisk"] as? String)
+            if path == "/"
+                || (bootContainer != nil && bootContainer == volContainer)
+                || (bootDisk != nil && bootDisk == volDisk) {
+                throw T7DetectionError.bootVolume
+            }
+        }
+
         let fs = (volInfo["FilesystemName"] as? String)
             ?? (volInfo["FilesystemType"] as? String)
             ?? ""
@@ -174,7 +190,11 @@ enum T7Detector {
             if bsdName == apfsBackingPartition { continue }
             if volName == T7HelperConstants.partitionLabel { continue }
 
-            let label = volName.isEmpty ? bsdName : volName
+            // Name the partition type too: an unnamed "Microsoft Reserved"
+            // leftover from Windows is the usual culprit, and Disk Utility
+            // won't delete those, so the user needs to know what it is.
+            var label = volName.isEmpty ? bsdName : "\(volName) (\(bsdName))"
+            if !content.isEmpty { label += ", type \(content)" }
             extras.append(label)
         }
         return extras
@@ -198,7 +218,7 @@ enum T7Detector {
         return nil
     }
 
-    private nonisolated static func runDiskutilPlist(_ args: [String]) throws -> [String: Any] {
+    nonisolated static func runDiskutilPlist(_ args: [String]) throws -> [String: Any] {
         let proc = Process()
         proc.executableURL = URL(fileURLWithPath: "/usr/sbin/diskutil")
         proc.arguments = args

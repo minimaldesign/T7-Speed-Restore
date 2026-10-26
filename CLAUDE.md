@@ -144,6 +144,12 @@ runtime). Keep it intact.
 - `SMAppServiceBridge.swift` — the signed-build Fix runner.
 - `MountWatcher.swift` — installs and loads the LaunchAgent that keeps
   T7FIXER hidden across replug/login.
+- `Diagnostics.swift` — the "Copy Diagnostics" button. Gathers macOS
+  version, `diskutil info` for the dropped volume, its container, the
+  physical disk and every partition, the full `diskutil list`, and the
+  debug log into one report, copied to the clipboard and saved to
+  `/tmp/t7fixer-diagnostics.txt`. Works even when detection refused the
+  drive, which is when the debug log does not exist yet.
 - `T7HelperProtocol.swift` — `@objc` XPC protocol + shared constants
   (`T7HelperConstants.machServiceName`, `partitionLabel`, `partitionSizeGB`,
   `fstabMarker`). Shared between main app and helper target.
@@ -246,6 +252,31 @@ Every entry here cost a debugging cycle to discover.
   table (`/sbin/mount`) is faster to update; the script's primary
   partition-discovery uses mount, falling back to per-slot plist queries.
 
+- **`diskutil apfs resizeContainer` runs a full `fsck_apfs -n -x` of the
+  container before it touches anything.** Two user-facing consequences:
+  on a large, well-filled drive over USB the check alone takes minutes and
+  looks like a hang (Finder beachballs because diskutil holds the volume),
+  and if the check fails diskutil refuses with `-69716 "Storage system
+  verify or repair failed"`. The script maps -69716 to a "run First Aid"
+  message and the UI warns about the wait. Interrupting the shrink after
+  the check (force-quit, unplug) is the one thing a user must not do.
+
+- **A T7 can be the startup disk.** fsck on a live system container reports
+  spurious errors, so resize fails with -69716 (GitHub issue 3 showed the
+  volume name as "/"). `T7Detector` refuses any volume whose APFS container
+  or physical disk matches that of `/`.
+
+- **An external drive can be `disk1`.** On an Intel Mac a drive plugged in
+  at boot can enumerate before the internal synthesized container. The
+  script's whole-disk regex accepts any disk number; the `Internal` and
+  `Removable` plist checks are what protect the boot disk.
+
+- **Windows leftovers block the fix.** A nameless partition Disk Utility
+  won't delete (typically a 16 MB "Microsoft Reserved" partition from
+  initializing the drive on a PC) trips the extra-partition refusal. The
+  error now includes the partition's `Content` type so support can tell.
+  `sudo diskutil eraseVolume free Empty diskNsM` removes it.
+
 ### macOS file permissions
 
 - **`/etc/fstab` is not writable from osascript-elevated bash** (via
@@ -331,7 +362,11 @@ non-obvious ones:
 
 The bash script writes step-by-step diagnostic info to
 `/tmp/t7fixer-debug.log`. It **truncates on every run** (`: > "$DEBUG_LOG"`
-at the top). The file is also `chmod 666`-ed so the user can read it
+at the top). Every `diskutil` call that changes the disk goes through
+`run_logged`, so the log carries diskutil's own output (including the
+fsck lines). The log only exists once the script has run: a detection
+refusal produces no log, which is why the FAQ's "send me the log" advice
+confused a user. Point them at Copy Diagnostics instead. The file is also `chmod 666`-ed so the user can read it
 without sudo for support purposes. The path is intentionally not surfaced
 in user-facing error messages anymore — it's a developer tool.
 
@@ -348,6 +383,21 @@ xcodebuild -project "T7 Speed Restore.xcodeproj" \
 
 Built `.app` lives in
 `~/Library/Developer/Xcode/DerivedData/T7_Speed_Restore-*/Build/Products/Debug/T7 Speed Restore.app`.
+
+### Testing without a T7 (disk image rig)
+
+A sparse disk image passes every detector check except the model name
+(`Internal` false, `RemovableMedia` and `Ejectable` true), so the
+"Use This Drive Anyway" override runs the whole flow against it:
+
+```bash
+hdiutil create -size 3g -type SPARSE -fs APFS -volname FAKET7 -layout GPTSPUD /tmp/faket7 && hdiutil attach /tmp/faket7.sparseimage
+```
+
+`diskutil` does not need root on a user-attached image, so the bash
+script can also be extracted from `OsascriptBridge.swift` and run
+directly (substitute the `\(...)` interpolations and use a 1 GB size).
+Only `/etc/fstab` fails, which is the expected best-effort path.
 
 ### Manual end-to-end test (requires a real Samsung T7)
 

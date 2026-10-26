@@ -80,10 +80,22 @@ final class OsascriptBridge: @unchecked Sendable {
         debug "=== T7Fixer script start ==="
         debug "WHOLE_DISK=$WHOLE_DISK APFS_PART=$APFS_PART LABEL=$LABEL SIZE=$SIZE"
 
-        if ! [[ "$WHOLE_DISK" =~ ^disk[2-9][0-9]*$ ]]; then
+        # Any disk number is possible for an external drive (one plugged in at
+        # boot on an Intel Mac can enumerate as disk1). The Internal and
+        # Removable checks below are what actually protect the boot disk.
+        if ! [[ "$WHOLE_DISK" =~ ^disk[0-9]+$ ]]; then
             echo "The selected drive isn't a removable disk we can safely modify." >&2
             exit 64
         fi
+
+        # Run a diskutil command with its full stdout+stderr appended to the
+        # debug log (and echoed to stderr so a failure's last line reaches the
+        # app). Without this the log goes silent during the longest steps,
+        # because diskutil's own output only ever reached AppleScript.
+        run_logged() {
+            debug "run: $*"
+            "$@" 2>&1 | tee -a "$DEBUG_LOG" >&2
+        }
 
         plist_bool() {
             diskutil info -plist "$WHOLE_DISK" 2>/dev/null \
@@ -152,15 +164,15 @@ final class OsascriptBridge: @unchecked Sendable {
         if [ -n "$EXISTING" ]; then
             debug "Cleaning up $EXISTING"
             diskutil unmount force "$EXISTING" 2>/dev/null || true
-            diskutil eraseVolume free Empty "$EXISTING"
-            diskutil apfs resizeContainer "$APFS_PART" 0
+            run_logged diskutil eraseVolume free Empty "$EXISTING"
+            run_logged diskutil apfs resizeContainer "$APFS_PART" 0
             # Sweep duplicates from older buggy runs
             while EXTRA=$(find_partition "$LABEL" 2>/dev/null); do
                 [ -z "$EXTRA" ] && break
                 debug "Sweeping extra $EXTRA"
                 diskutil unmount force "$EXTRA" 2>/dev/null || true
-                diskutil eraseVolume free Empty "$EXTRA"
-                diskutil apfs resizeContainer "$APFS_PART" 0
+                run_logged diskutil eraseVolume free Empty "$EXTRA"
+                run_logged diskutil apfs resizeContainer "$APFS_PART" 0
             done
         fi
 
@@ -176,10 +188,21 @@ final class OsascriptBridge: @unchecked Sendable {
             exit 65
         fi
         TARGET_BYTES=$((CURRENT_BYTES - \(sizeGB) * 1024 * 1024 * 1024))
-        debug "Shrinking APFS to $TARGET_BYTES bytes..."
-        diskutil apfs resizeContainer "$APFS_PART" "$TARGET_BYTES"
+        # resizeContainer runs a full fsck_apfs of the container before it
+        # touches anything. On a large, well-filled drive over USB that check
+        # alone can take many minutes, and if it fails diskutil refuses with
+        # -69716 "Storage system verify or repair failed".
+        debug "Shrinking APFS to $TARGET_BYTES bytes (diskutil verifies the file system first; this can take several minutes)..."
+        if ! run_logged diskutil apfs resizeContainer "$APFS_PART" "$TARGET_BYTES"; then
+            if grep -q -- "-69716" "$DEBUG_LOG"; then
+                echo "macOS found a problem with the drive’s file system and refused to resize it. Open Disk Utility, select the drive, run First Aid, then try again. If you start up your Mac from this drive, run the fix from another startup disk instead." >&2
+            else
+                echo "Shrinking the drive’s APFS container failed. $(tail -n 1 "$DEBUG_LOG")" >&2
+            fi
+            exit 66
+        fi
         debug "Adding partition..."
-        diskutil addPartition "$APFS_PART" ExFAT "$LABEL" "$SIZE"
+        run_logged diskutil addPartition "$APFS_PART" ExFAT "$LABEL" "$SIZE"
         debug "addPartition returned"
 
         # ---- Step 3: find the freshly-created partition (it auto-mounts) ----

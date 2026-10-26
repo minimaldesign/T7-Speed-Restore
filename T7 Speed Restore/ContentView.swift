@@ -8,6 +8,9 @@ struct ContentView: View {
     @State private var isDetecting = false
     @State private var dropTargeted = false
     @State private var summaryDropTargeted = false
+    @State private var lastDroppedURL: URL?
+    @State private var isGatheringDiagnostics = false
+    @State private var diagnosticsStatus: String?
 
     @State private var fixCoordinator = FixCoordinator()
     @State private var benchmarkCoordinator = BenchmarkCoordinator()
@@ -48,12 +51,41 @@ struct ContentView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Samsung T7 Speed Restore")
-                .font(.title2.weight(.semibold))
-            Text("Restore your T7's to its original write speed.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Samsung T7 Speed Restore")
+                        .font(.title2.weight(.semibold))
+                    Text("Restore your T7's to its original write speed.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button(isGatheringDiagnostics ? "Gathering..." : "Copy Diagnostics") {
+                    copyDiagnostics()
+                }
+                .buttonStyle(FlatSecondaryButtonStyle(compact: true))
+                .disabled(isGatheringDiagnostics)
+                .help("Copies drive and system details to the clipboard for a bug report.")
+            }
+            if let diagnosticsStatus {
+                Text(diagnosticsStatus)
+                    .font(.callout)
+                    .foregroundStyle(successColor)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func copyDiagnostics() {
+        isGatheringDiagnostics = true
+        diagnosticsStatus = nil
+        Task {
+            let report = await Diagnostics.gather(for: lastDroppedURL ?? drive.map { URL(fileURLWithPath: $0.mountPath) })
+            diagnosticsStatus = Diagnostics.deliver(report)
+            isGatheringDiagnostics = false
+            try? await Task.sleep(for: .seconds(8))
+            diagnosticsStatus = nil
         }
     }
 
@@ -115,11 +147,12 @@ struct ContentView: View {
                 case .idle:
                     EmptyView()
                 case .fixing:
-                    HStack(spacing: 8) {
+                    HStack(alignment: .top, spacing: 8) {
                         ProgressView().controlSize(.small)
-                        Text("Applying fix. Enter your password when prompted.")
+                        Text(FixCoordinator.fixingNotice)
                             .font(.callout)
                             .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 case .success:
                     Text("Fix applied. Run a benchmark to verify.")
@@ -273,6 +306,7 @@ struct ContentView: View {
         isDetecting = true
         detectionError = nil
         overridableURL = nil
+        lastDroppedURL = url
         Task {
             do {
                 let detected = try await T7Detector.detect(
