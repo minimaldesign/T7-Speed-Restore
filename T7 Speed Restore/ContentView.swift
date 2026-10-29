@@ -47,6 +47,7 @@ struct ContentView: View {
         }
         .padding(28)
         .frame(minWidth: 620, maxWidth: 1200)
+        .background(WindowCloseLock(locked: fixCoordinator.isBusy))
         .preferredColorScheme(.dark)
     }
 
@@ -147,15 +148,11 @@ struct ContentView: View {
                 case .idle:
                     EmptyView()
                 case .fixing:
-                    HStack(alignment: .top, spacing: 8) {
-                        ProgressView().controlSize(.small)
-                        Text(FixCoordinator.fixingNotice)
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                    if let progress = fixCoordinator.progress {
+                        FixProgressView(progress: progress)
                     }
-                case .success:
-                    Text("Fix applied. Run a benchmark to verify.")
+                case .success(_, _, let duration):
+                    Text(FixCoordinator.successText(duration: duration))
                         .font(.callout)
                         .foregroundStyle(successColor)
                 case .failed(let msg):
@@ -199,13 +196,18 @@ struct ContentView: View {
                     Text("Run a benchmark before and after the fix to measure the speed improvement.")
                         .font(.callout)
                         .foregroundStyle(.tertiary)
+                    Text("The fix takes from a few minutes to over an hour, depending on the drive’s size and how slow it has become. The first run is usually the longest. You can keep using your Mac while it runs.")
+                        .font(.callout)
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(height: 110)
-        .scrollIndicators(.hidden)
+        .frame(height: fixCoordinator.isBusy ? 200 : 110)
+        .scrollIndicators(.automatic)
+        .animation(.easeInOut(duration: 0.2), value: fixCoordinator.isBusy)
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.black.opacity(0.30))
@@ -324,6 +326,21 @@ struct ContentView: View {
                 detectionError = (error as? LocalizedError)?.errorDescription ?? "\(error)"
                 isDetecting = false
             }
+        }
+    }
+}
+
+/// Disables the window's close button while a fix runs. Closing the window
+/// would drop the progress view while the fix carries on unseen.
+private struct WindowCloseLock: NSViewRepresentable {
+    let locked: Bool
+
+    func makeNSView(context: Context) -> NSView { NSView() }
+
+    func updateNSView(_ view: NSView, context: Context) {
+        let locked = locked
+        DispatchQueue.main.async {
+            view.window?.standardWindowButton(.closeButton)?.isEnabled = !locked
         }
     }
 }

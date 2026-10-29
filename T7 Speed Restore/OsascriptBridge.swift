@@ -28,8 +28,9 @@ final class OsascriptBridge: @unchecked Sendable {
     static let shared = OsascriptBridge()
     private init() {}
 
-    nonisolated func performFix(on drive: T7Drive) async throws -> String {
+    nonisolated func performFix(on drive: T7Drive, runID: String) async throws -> String {
         let bash = makeBashScript(
+            runID: runID,
             wholeDisk: drive.wholeDisk,
             apfsPartition: drive.apfsPartition,
             label: T7HelperConstants.partitionLabel,
@@ -58,7 +59,8 @@ final class OsascriptBridge: @unchecked Sendable {
     /// A run-by-run debug log is written to /tmp/t7fixer-debug.log (it
     /// truncates on each run). Only `RESULT_UUID=` and `RESULT_PART=` go
     /// to stdout, which is what AppleScript hands back to Swift.
-    private nonisolated func makeBashScript(wholeDisk: String,
+    private nonisolated func makeBashScript(runID: String,
+                                             wholeDisk: String,
                                              apfsPartition: String,
                                              label: String,
                                              sizeGB: Int,
@@ -72,12 +74,15 @@ final class OsascriptBridge: @unchecked Sendable {
         LABEL='\(label)'
         SIZE='\(sizeGB)G'
         MARKER='\(marker)'
+        RUN_ID='\(runID)'
 
         DEBUG_LOG=/tmp/t7fixer-debug.log
         : > "$DEBUG_LOG" || true
         chmod 666 "$DEBUG_LOG" 2>/dev/null || true
         debug() { echo "[$(date '+%H:%M:%S')] $*" >> "$DEBUG_LOG"; }
-        debug "=== T7Fixer script start ==="
+        # The app follows this log while the fix runs to show which step is
+        # in progress, and only trusts lines after its own run ID.
+        debug "=== T7Fixer script start === run=$RUN_ID"
         debug "WHOLE_DISK=$WHOLE_DISK APFS_PART=$APFS_PART LABEL=$LABEL SIZE=$SIZE"
 
         # Any disk number is possible for an external drive (one plugged in at
@@ -92,9 +97,14 @@ final class OsascriptBridge: @unchecked Sendable {
         # debug log (and echoed to stderr so a failure's last line reaches the
         # app). Without this the log goes silent during the longest steps,
         # because diskutil's own output only ever reached AppleScript.
+        # Each output line gets a timestamp, so a support log shows how long
+        # the file-system check and the data move took. diskutil's output
+        # streams line by line through a pipe; pipefail keeps its exit status.
         run_logged() {
             debug "run: $*"
-            "$@" 2>&1 | tee -a "$DEBUG_LOG" >&2
+            "$@" 2>&1 | while IFS= read -r line; do
+                printf '[%s] %s\\n' "$(date '+%H:%M:%S')" "$line"
+            done | tee -a "$DEBUG_LOG" >&2
         }
 
         plist_bool() {
@@ -197,7 +207,7 @@ final class OsascriptBridge: @unchecked Sendable {
             if grep -q -- "-69716" "$DEBUG_LOG"; then
                 echo "macOS found a problem with the drive’s file system and refused to resize it. Open Disk Utility, select the drive, run First Aid, then try again. If you start up your Mac from this drive, run the fix from another startup disk instead." >&2
             else
-                echo "Shrinking the drive’s APFS container failed. $(tail -n 1 "$DEBUG_LOG")" >&2
+                echo "Shrinking the drive’s APFS container failed. $(tail -n 1 "$DEBUG_LOG" | cut -d' ' -f2-)" >&2
             fi
             exit 66
         fi

@@ -24,13 +24,15 @@ final class PrivilegeRouter: @unchecked Sendable {
         return .smAppService
     }
 
-    nonisolated func performFix(on drive: T7Drive) async throws -> String {
+    /// `runID` tags the osascript path's debug log so the app can follow
+    /// that run's progress. The SMAppService helper doesn't write the log.
+    nonisolated func performFix(on drive: T7Drive, runID: String) async throws -> String {
         let uuid: String
         switch detectPath() {
         case .smAppService:
             uuid = try await SMAppServiceBridge.shared.performFix(on: drive)
         case .osascript:
-            uuid = try await OsascriptBridge.shared.performFix(on: drive)
+            uuid = try await OsascriptBridge.shared.performFix(on: drive, runID: runID)
         }
 
         // Install/refresh the LaunchAgent that auto-unmounts T7FIXER on

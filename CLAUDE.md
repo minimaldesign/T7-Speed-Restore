@@ -124,7 +124,10 @@ runtime). Keep it intact.
 
 ### Main app (`T7 Speed Restore/T7 Speed Restore/`)
 
-- `T7_Speed_RestoreApp.swift` — `@main` entry point (default Xcode-generated).
+- `T7_Speed_RestoreApp.swift` — `@main` entry point plus an `AppDelegate`
+  that asks for confirmation before quitting while a fix runs. The window's
+  close button is also disabled during a fix (`WindowCloseLock` in
+  `ContentView.swift`).
 - `ContentView.swift` — top-level SwiftUI view.
 - `DropZoneView.swift` — the drag-and-drop target view.
 - `T7Drive.swift` — value type holding the validated drive info plus the
@@ -132,7 +135,15 @@ runtime). Keep it intact.
 - `T7Detector.swift` — turns a dropped URL into a validated `T7Drive`.
   Reads `diskutil info -plist` and parses with `PropertyListSerialization`.
 - `FixCoordinator.swift` — `@MainActor @Observable` state machine for the
-  Fix button.
+  Fix button. Owns a `FixProgress` while running, holds a power assertion
+  so the Mac doesn't idle-sleep, bounces the Dock icon when done, and
+  reports the duration ("Fix applied in 1 h 6 min").
+- `FixProgress.swift` — follows a running fix once a second: the current
+  step (parsed from the debug log, filtered by a per-run ID), live
+  read/write rates for the T7 (IOKit `IOBlockStorageDriver` "Statistics",
+  readable without root), elapsed time, and during the data move an
+  upper-bound estimate (bytes written so far against the 25 GiB ceiling).
+- `FixProgressView.swift` — renders that in the feedback strip.
 - `BenchmarkCoordinator.swift` — same shape, for the Benchmark button.
 - `Benchmark.swift` — POSIX `open` + `fcntl F_NOCACHE` + `write` loop,
   time-boxed at 6s. Uses 1 MB chunks so the time-box overshoots by at most
@@ -261,6 +272,19 @@ Every entry here cost a debugging cycle to discover.
   message and the UI warns about the wait. Interrupting the shrink after
   the check (force-quit, unplug) is the one thing a user must not do.
 
+- **The first fix on a big, slowed-down drive can take over an hour, and
+  almost all of it is the shrink moving data.** To shrink by 25 GiB, APFS
+  must relocate whatever lives in the last 25 GiB of the container, and it
+  writes at the drive's current speed, which with the bug active is
+  ~2-10 MB/s. A user's 4 TB Shield took 1 h 6 min; Disk Utility showed
+  "Other Volumes" climbing to ~20 GB (the data in transit) and then
+  dropping when done. Re-runs are much faster: the script gives the old
+  T7FIXER space back to APFS and immediately shrinks again, and that
+  region is still empty. diskutil prints no progress during the move, so
+  the app shows live disk I/O from IOKit instead (see `FixProgress`).
+  `resizeContainer` output streams line by line through a pipe (no pty
+  needed), which is what makes following the log live possible.
+
 - **A T7 can be the startup disk.** fsck on a live system container reports
   spurious errors, so resize fails with -69716 (GitHub issue 3 showed the
   volume name as "/"). `T7Detector` refuses any volume whose APFS container
@@ -368,7 +392,9 @@ The bash script writes step-by-step diagnostic info to
 `/tmp/t7fixer-debug.log`. It **truncates on every run** (`: > "$DEBUG_LOG"`
 at the top). Every `diskutil` call that changes the disk goes through
 `run_logged`, so the log carries diskutil's own output (including the
-fsck lines). The log only exists once the script has run: a detection
+fsck lines), each line timestamped. The first line carries
+`run=<UUID>`; the app passes that ID in and only parses lines after it,
+so a stale log from an earlier run is never mistaken for progress. The log only exists once the script has run: a detection
 refusal produces no log, which is why the FAQ's "send me the log" advice
 confused a user. Point them at Copy Diagnostics instead. The file is also `chmod 666`-ed so the user can read it
 without sudo for support purposes. The path is intentionally not surfaced
